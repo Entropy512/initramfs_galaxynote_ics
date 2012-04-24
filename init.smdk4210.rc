@@ -37,8 +37,8 @@ on boot
 
     mount debugfs /sys/kernel/debug /sys/kernel/debug
 
-    setprop ro.build.product GT-I9100
-    setprop ro.product.device GT-I9100
+    setprop ro.build.product GT-N7000
+    setprop ro.product.device GT-N7000
     setprop ro.radio.noril yes
 
 # Permisions for sensors
@@ -47,6 +47,8 @@ on boot
     chown radio system /sys/devices/virtual/K3G_GYRO-dev/k3g/gyro_power_on
     chown radio system /sys/devices/virtual/accelerometer/accelerometer/acc_file
     chown radio system /sys/devices/virtual/sec/gsensorcal/calibration
+    chown radio system /sys/class/sensors/barometer_sensor/eeprom_check
+    chown radio system /sys/class/sensors/barometer_sensor/sea_level_pressure
 
 # permissions for NFC
     setprop ro.nfc.port "I2C"

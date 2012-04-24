@@ -121,19 +121,10 @@ on fs
     mount ext4 /dev/block/mmcblk0p1 /efs nosuid nodev noatime wait
     chown radio system /efs
     chmod 0771 /efs
-    mkdir /efs/bluetooth
-    mkdir /efs/wifi
-    chown radio system /efs/bluetooth
-    chown radio system /efs/wifi
-    chmod 0775 /efs/bluetooth
-    chmod 0775 /efs/wifi
 
     # check encryption status, checking UMS & data should be excuted after this command 
     exec check_encryption_status /dev/block/mmcblk0p10
-    
-    # verfiy filesystem (UMS)
-    exec sformat /dev/block/mmcblk0p11 vfat
-	  
+
 on post-fs
     exec sfsck /dev/block/mmcblk0p10 ext4
     mount ext4 /dev/block/mmcblk0p10 /data nosuid nodev noatime wait noauto_da_alloc
@@ -215,7 +206,7 @@ on post-fs-data
     mkdir /data/misc/vpn 0770 system vpn
     mkdir /data/misc/systemkeys 0700 system system
     mkdir /data/misc/vpn/profiles 0770 system system
-    mkdir /data/misc/radio 0775 radio system
+    mkdir /data/misc/radio 0775 radio radio
     # give system access to wpa_supplicant.conf for backup and restore
     mkdir /data/misc/wifi 0770 wifi wifi
     chmod 0770 /data/misc/wifi
@@ -242,16 +233,13 @@ on post-fs-data
     # create directory for DRM plug-ins
     mkdir /data/drm 0774 drm drm
 
-	#Code changes for GB-> ICS upgrade for U1/T1 models ...Moving .db file .. starts
-
-	mkdir /data/system/databases 0771 system system
-	copy /data/data/com.sec.android.providers.drm/databases/drmdatabase.db /data/system/databases/drmdatabase.db
-	chown system system /data/system/databases/drmdatabase.db
-	chmod 0774 /data/system/databases/drmdatabase.db	
-
-	#Code changes for GB-> ICS upgrade for U1/T1 models ...Moving .db file .. ends	
-	
 #SISO-PLAYREADY-CHANGES
+    # [ save OMA DB, when upgrading from GB to ICS    
+    mkdir /data/system/databases 0771 system system
+    copy /data/data/com.sec.android.providers.drm/databases/drmdatabase.db /data/system/databases/drmdatabase.db
+    chown system system /data/system/databases/drmdatabase.db
+    chmod 0774 /data/system/databases/drmdatabase.db	
+    # ]
 #DRM directory creation
     mkdir /system/etc/security/.drm 0775
     chown root root /system/etc/security/.drm
@@ -300,10 +288,6 @@ on post-fs-data
 # MTP Device permission.
 	chmod 0660 /dev/usb_mtp_gadget
 	chown system system /dev/usb_mtp_gadget
-
-# terminal mode
-    chmod 0660 /sys/class/android_usb/android0/terminal_version
-    chown system system /sys/class/android_usb/android0/terminal_version
 
 # NFC
     setprop ro.nfc.port "I2C"
@@ -398,11 +382,8 @@ on boot
     chown system system /data/pxtmpdir
     chmod 0775 /data/pxtmpdir
 
-    # permission for HDMI audio path
-    chown media audio /sys/class/hdmi_audio/hdmi_audio/hdmi_audio_set_ext
-
 # Permissions for gpio_keys.
-    chown system radio /sys/class/sec/sec_key/wakeup_keys 
+    chown radio system /sys/class/sec/sec_key/wakeup_keys 
     write /sys/class/sec/sec_key/wakeup_keys  102,116
 
 # Add permission for ATM. 2010.03.20
@@ -440,7 +421,7 @@ on boot
     chmod 0660 /sys/power/state
     chmod 0660 /sys/power/wake_lock
     chmod 0660 /sys/power/wake_unlock
-
+    chown system system /sys/devices/virtual/sec/sec_touchkey/brightness
     chown system system /sys/class/timed_output/vibrator/enable
     chown system system /sys/class/leds/keyboard-backlight/brightness
     chown system system /sys/class/leds/lcd-backlight/brightness
@@ -453,6 +434,7 @@ on boot
     chown system system /sys/class/leds/red/device/grpfreq
     chown system system /sys/class/leds/red/device/grppwm
     chown system system /sys/class/leds/red/device/blink
+    chown system system /sys/class/leds/leds-sec/brightness
     chown system system /sys/class/leds/red/brightness
     chown system system /sys/class/leds/green/brightness
     chown system system /sys/class/leds/blue/brightness
@@ -469,49 +451,6 @@ on boot
     chown system system /sys/kernel/ipv4/tcp_rmem_max
     chown system system /sys/class/power_supply/battery/temp
     chown root radio /proc/cmdline
-
-# Permissions for input devices
-    chown system radio /sys/devices/virtual/sec/sec_key/sec_key_pressed
-
-    chown system radio /sys/devices/virtual/sec/sec_touchkey/enable_disable
-    chown system radio /sys/devices/virtual/sec/sec_touchkey/recommended_version
-    chown system radio /sys/devices/virtual/sec/sec_touchkey/touch_sensitivity
-    chown system radio /sys/devices/virtual/sec/sec_touchkey/brightness
-    chown system radio /sys/devices/virtual/sec/sec_touchkey/touchkey_brightness
-    chown system radio /sys/devices/virtual/sec/sec_touchkey/touchkey_back
-    chown system radio /sys/devices/virtual/sec/sec_touchkey/touchkey_menu
-    chown system radio /sys/devices/virtual/sec/sec_touchkey/touchkey_firm_version_panel
-    chown system radio /sys/devices/virtual/sec/sec_touchkey/touchkey_firm_version_phone
-    chown system radio /sys/devices/virtual/sec/sec_touchkey/touchkey_firm_update_status
-    chown system radio /sys/devices/virtual/sec/sec_touchkey/touchkey_firm_update
-    chown system radio /sys/devices/virtual/sec/sec_touchkey/updated_version
-
-    chown system radio /sys/devices/virtual/sec/tsp_noise_test/set_firm_version
-    chown system radio /sys/devices/virtual/sec/tsp_noise_test/set_threshould
-    chown system radio /sys/devices/virtual/sec/tsp_noise_test/set_all_delta
-    chown system radio /sys/devices/virtual/sec/tsp_noise_test/set_all_refer
-    chown system radio /sys/devices/virtual/sec/tsp_noise_test/set_delta4
-    chown system radio /sys/devices/virtual/sec/tsp_noise_test/set_refer4
-    chown system radio /sys/devices/virtual/sec/tsp_noise_test/set_delta3
-    chown system radio /sys/devices/virtual/sec/tsp_noise_test/set_refer3
-    chown system radio /sys/devices/virtual/sec/tsp_noise_test/set_delta2
-    chown system radio /sys/devices/virtual/sec/tsp_noise_test/set_refer2
-    chown system radio /sys/devices/virtual/sec/tsp_noise_test/set_delta1
-    chown system radio /sys/devices/virtual/sec/tsp_noise_test/set_refer1
-    chown system radio /sys/devices/virtual/sec/tsp_noise_test/set_delta0
-    chown system radio /sys/devices/virtual/sec/tsp_noise_test/set_refer0
-    chown system radio /sys/devices/virtual/sec/tsp_noise_test/disp_all_deltadata
-    chown system radio /sys/devices/virtual/sec/tsp_noise_test/disp_all_refdata
-    chown system radio /sys/devices/virtual/sec/tsp_noise_test/set_module_off
-    chown system radio /sys/devices/virtual/sec/tsp_noise_test/set_module_on
-
-    chown system radio /sys/devices/virtual/sec/sec_touchscreen/tsp_firm_version_panel
-    chown system radio /sys/devices/virtual/sec/sec_touchscreen/tsp_firm_version_phone
-    chown system radio /sys/devices/virtual/sec/sec_touchscreen/tsp_firm_update_status 
-    chown system radio /sys/devices/virtual/sec/sec_touchscreen/tsp_firm_update 
-    chown system radio /sys/devices/virtual/sec/sec_touchscreen/tsp_threshold
-    chown system radio /sys/devices/virtual/sec/sec_touchscreen/tsp_config_version
-    chown system radio /sys/devices/virtual/sec/sec_touchscreen/tsp_touchtype
 
 # Permissions for bluetooth
     setprop ro.bt.bdaddr_path "/efs/bluetooth/bt_addr"
@@ -539,6 +478,31 @@ on boot
     chown system media_rw /sys/class/mdnie/mdnie/scenario
     chown system system /sys/class/mdnie/mdnie/negative
 
+# Permissions for WACOM
+    chown system radio /sys/class/sec/sec_epen/epen_firm_update
+    chown system radio /sys/class/sec/sec_epen/epen_rotation
+    chown system radio /sys/class/sec/sec_epen/epen_hand
+    chown system radio /sys/class/sec/sec_epen/epen_reset
+    chown system radio /sys/class/sec/sec_epen/epen_reset_result
+    chown system radio /sys/class/sec/sec_epen/epen_checksum
+    chown system radio /sys/class/sec/sec_epen/epen_checksum_result
+# Firmware update
+    write /sys/class/sec/sec_epen/epen_firm_update R
+
+# Permissions for Touchkey
+  	chown system radio /sys/class/sec/sec_touchkey/enable_disable 
+	chown system radio /sys/class/sec/sec_touchkey/touchkey_brightness
+	chown system radio /sys/class/sec/sec_touchkey/touchkey_menu
+	chown system radio /sys/class/sec/sec_touchkey/touchkey_back
+	chown system radio /sys/class/sec/sec_touchkey/touch_update
+	chown system radio /sys/class/sec/sec_touchkey/touch_version
+	chown system radio /sys/class/sec/sec_touchkey/touchkey_firm_version_panel
+	chown system radio /sys/class/sec/sec_touchkey/touchkey_firm_version_phone
+	chown system radio /sys/class/sec/sec_touchkey/touchkey_firm_update_status
+	chown system radio /sys/class/sec/sec_touchkey/touchkey_firm_update
+	chown system radio /sys/class/sec/sec_touchkey/touch_sensitivity
+	chown system radio /sys/class/sec/sec_touchkey/touchkey_threshold
+
 # Permissions for uart_sel and usb_sel
     chown system radio /sys/class/sec/switch/uart_sel/value
     chown system radio /sys/class/sec/switch/usb_sel
@@ -546,6 +510,7 @@ on boot
     chown system radio /sys/class/sec/switch/otg_test
     chown system radio /sys/class/sec/switch/adc_debounce_time
     chown system radio /sys/class/sec/switch/status
+    chown system radio /sys/class/sec/switch/usb_state
     chown system radio /sys/class/sec/switch/adc
     chown system radio /mnt/.lfs/sw_sel
 
@@ -573,9 +538,6 @@ on boot
 # for datarouter
     chown system system /dev/dun
     chown system system /dev/ttyGS0
-    chown system system /dev/ttyGS1
-    chown system system /dev/ttyGS2
-    chown system system /dev/ttyGS3
 # +++++++++++++++++++++++++++++++++++++++++++
 
 
@@ -738,7 +700,7 @@ service DR-deamon /system/bin/drexe
 service mobex-daemon /system/bin/npsmobex
     class main
     user system
-    group system inet sdcard_rw
+    group system radio inet sdcard_rw
 
 service surfaceflinger /system/bin/surfaceflinger
     class main
@@ -757,7 +719,7 @@ service zygote /system/bin/app_process -Xzygote /system/bin --zygote --start-sys
 service drm /system/bin/drmserver
     class main
     user drm
-    group system inet sdcard_rw media_rw radio
+    group system inet drmrpc sdcard_rw media_rw radio
 
 service media /system/bin/mediaserver
     class main
@@ -780,6 +742,12 @@ service playsound /system/bin/playsound
 	disabled
 	oneshot
 #for samsung boot sound
+
+service gpsd /system/bin/gpsd -c /system/etc/gps.xml
+    class main
+    socket gps seqpacket 0660 gps system
+    user gps
+    group system inet sdcard_rw
 
 service dbus /system/bin/dbus-daemon --system --nofork
     class main
@@ -901,13 +869,6 @@ service rtc_log /system/bin/sh /system/bin/rtc_log.sh
 #    class main
 #    user root
 #    oneshot
-    
-# 2011-12-08/systemsw/kyo/ bugreport is triggered by holding down volume down, volume up and power
-service bugreport /system/bin/bugmailer.sh -v
-	class main
-	disabled
-	oneshot
-	keycodes 114 115 116
 
 on property:sys.boot_completed=1
     stop samsungani
